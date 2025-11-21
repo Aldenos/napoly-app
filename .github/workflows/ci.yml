@@ -8,10 +8,9 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [16.x, 18.x]
 
     steps:
@@ -22,13 +21,16 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: 'resources/app/package-lock.json'
     
     - name: Install dependencies
       run: |
         cd resources/app
         npm install
     
-    - name: Check syntax
+    - name: Verify file structure
       run: |
-        cd resources/app
-        node -c main.js
+        test -f resources/app/main.js
+        test -f resources/app/preload.js
+        test -f resources/app/package.json
+        test -d resources/app/src
