@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Ventas</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #resumenTotales {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    #selectMes {
+      margin: 10px auto;
+      display: none;
+    }
+    #resumenPorDia { margin: 20px 0; }
+    .dia-item { margin: 8px 0; }
+    .tabla-resumen {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 12px;
+    }
+    .tabla-resumen th, .tabla-resumen td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    .tabla-resumen th {
+      background: #f7f7f7;
+    }
+  </style>
+</head>
+<body>
+  <div class="historial-container">
+    <img src="assets/Logo.png" class="logo" alt="Logo Napoly">
+    <h2>Historial de Ventas</h2>
+    <div>
+      <button onclick="filtrar('dia')">Hoy</button>
+      <button onclick="filtrar('ayer')">Ayer</button>
+      <button onclick="filtrar('anteayer')">Anteayer</button>
+      <button onclick="filtrar('hace3dias')">Hace 3 días</button>
+      <button onclick="filtrar('semana')">Esta Semana</button>
+      <button onclick="mostrarSelectorMes()">Este Mes</button>
+      <button onclick="filtrar('todo')">Ver Todo</button>
+    </div>
+
+    <div id="selectMes">
+      <label for="mesesDisponibles"><strong>Seleccionar mes:</strong></label>
+      <select id="mesesDisponibles" onchange="filtrarMesSeleccionado()"></select>
+    </div>
+
+    <div id="resumenTotales"></div>
+
+    <h3 class="subtitulo">Resumen por Día</h3>
+    <div id="resumenPorDia"></div>
+
+    <ul id="listaVentas"></ul>
+    <button onclick="window.location.href='panel.html'">Volver</button>
+  </div>
+
+  <script>
+    const fs = require('fs');
+    const lista = document.getElementById("listaVentas");
+    const resumen = document.getElementById("resumenTotales");
+    const selectorMes = document.getElementById("selectMes");
+    const dropdownMeses = document.getElementById("mesesDisponibles");
+    const resumenPorDiaEl = document.getElementById("resumenPorDia");
+
+    let ventas = [];
+
+    function cargarVentas() {
+      const path = './ventas.json';
+      if (!fs.existsSync(path)) return [];
+      return JSON.parse(fs.readFileSync(path));
+    }
+
+    function mostrarSelectorMes() {
+      ventas = cargarVentas();
+      const mesesSet = new Set();
+      ventas.forEach(v => {
+        const fecha = new Date(v.fecha);
+        const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+        mesesSet.add(mesAnio);
+      });
+      const mesesOrdenados = Array.from(mesesSet).sort().reverse();
+      dropdownMeses.innerHTML = mesesOrdenados.map(m => {
+        const [año, mes] = m.split("-");
+        const nombreMes = new Date(año, mes - 1).toLocaleString('es', { month: 'long' });
+        return `<option value="${m}">${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} ${año}</option>`;
+      }).join('');
+      selectorMes.style.display = "block";
+      filtrarMesSeleccionado();
+    }
+
+    function filtrarMesSeleccionado() {
+      const selected = dropdownMeses.value;
+      const [año, mes] = selected.split("-");
+      const desde = new Date(año, mes - 1, 1);
+      const hasta = new Date(año, mes, 0, 23, 59, 59);
+      const filtradas = ventas.filter(v => {
+        const fecha = new Date(v.fecha);
+        return fecha >= desde && fecha <= hasta;
+      });
+      mostrarVentas(filtradas, `Resumen de ${dropdownMeses.options[dropdownMeses.selectedIndex].text}`);
+    }
+
+    function filtrar(filtro) {
+      selectorMes.style.display = "none";
+      ventas = cargarVentas();
+      const hoy = new Date();
+      let filtradas = ventas;
+      let titulo = "TODO";
+
+      if (filtro === 'dia') {
+        filtradas = ventas.filter(v => new Date(v.fecha).toDateString() === hoy.toDateString());
+        titulo = "HOY";
+      } else if (filtro === 'ayer') {
+        const d = new Date(hoy); d.setDate(hoy.getDate() - 1);
+        filtradas = ventas.filter(v => new Date(v.fecha).toDateString() === d.toDateString());
+        titulo = "AYER";
+      } else if (filtro === 'anteayer') {
+        const d = new Date(hoy); d.setDate(hoy.getDate() - 2);
+        filtradas = ventas.filter(v => new Date(v.fecha).toDateString() === d.toDateString());
+        titulo = "ANTEAYER";
+      } else if (filtro === 'hace3dias') {
+        const d = new Date(hoy); d.setDate(hoy.getDate() - 3);
+        filtradas = ventas.filter(v => new Date(v.fecha).toDateString() === d.toDateString());
+        titulo = "HACE 3 DÍAS";
+      } else if (filtro === 'semana') {
+        const inicioSemana = new Date(hoy); inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+        filtradas = ventas.filter(v => new Date(v.fecha) >= inicioSemana);
+        titulo = "ESTA SEMANA";
+      } else if (filtro === 'mes') {
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        filtradas = ventas.filter(v => new Date(v.fecha) >= inicioMes);
+        titulo = "ESTE MES";
+      }
+
+      mostrarVentas(filtradas, `Resumen del filtro: ${titulo}`);
+    }
+
+    function mostrarVentas(listaFiltrada, tituloResumen = "") {
+      let totalYape = 0;
+      let totalEfectivo = 0;
+
+      lista.innerHTML = listaFiltrada.map(v => {
+        const fecha = new Date(v.fecha);
+        const metodo = (v.metodoPago || "").toLowerCase();
+        const monto = parseFloat(v.total || 0);
+        if (metodo === "yape") totalYape += monto;
+        else totalEfectivo += monto;
+
+        const productosTxt = Array.isArray(v.productos) ? v.productos.join(', ') : (v.productos || '');
+        return `<li>
+          <strong>${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}</strong><br>
+          Usuario: ${v.usuario}<br>
+          Productos: ${productosTxt}<br>
+          Pago: ${v.metodoPago}<br>
+          Total: S/ ${v.total}
+        </li>`;
+      }).join('');
+
+      const totalGeneral = (totalYape + totalEfectivo).toFixed(2);
+      resumen.innerHTML = `
+        <p>${tituloResumen}</p>
+        <p>Total por Yape: S/ ${totalYape.toFixed(2)}</p>
+        <p>Total por Efectivo: S/ ${totalEfectivo.toFixed(2)}</p>
+        <p><strong>Total General: S/ ${totalGeneral}</strong></p>
+      `;
+
+      pintarResumenPorDia(listaFiltrada);
+    }
+
+    const CATEGORIAS = [
+      { key: "h1", label: "Helados de 1 bola", matchers: [/1\s*bola/i, /una\s*bola/i] },
+      { key: "h2", label: "Helados de 2 bolas", matchers: [/2\s*bolas/i, /doble/i] },
+      { key: "h3", label: "Helados de 3 bolas", matchers: [/3\s*bolas/i, /triple/i] },
+      { key: "litro", label: "Litros", matchers: [/litro/i] },
+      { key: "cremo_m", label: "Cremolada mediana", matchers: [/cremolada\s*mediana/i, /\bcremolada\s*m\b/i] },
+      { key: "cremo_g", label: "Cremolada grande", matchers: [/cremolada\s*grande/i, /\bcremolada\s*g\b/i] },
+      { key: "extra", label: "Extras (vaso/barquillo)", matchers: [/extra/i, /vaso/i, /barquillo/i] },
+    ];
+
+    function toKeyDate(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function categoriaDeNombre(nombre) {
+      if (!nombre) return "otros";
+      const text = String(nombre).toLowerCase();
+      for (const cat of CATEGORIAS) {
+        if (cat.matchers.some(re => re.test(text))) return cat.key;
+      }
+      return "otros";
+    }
+
+    function nuevoAcumulador() {
+      return { h1:0, h2:0, h3:0, litro:0, cremo_m:0, cremo_g:0, extra:0, otros:0 };
+    }
+
+    function pintarResumenPorDia(listaFiltrada) {
+      const mapa = new Map();
+      for (const v of listaFiltrada) {
+        const fecha = new Date(v.fecha);
+        const key = toKeyDate(fecha);
+        if (!mapa.has(key)) mapa.set(key, nuevoAcumulador());
+        const acc = mapa.get(key);
+
+        if (Array.isArray(v.productosDetallados)) {
+          for (const p of v.productosDetallados) {
+            const cat = categoriaDeNombre(p.nombre);
+            const cant = Number(p.cantidad || 1);
+            if (acc[cat] == null) acc.otros += cant;
+            else acc[cat] += cant;
+          }
+        } else {
+          const productos = Array.isArray(v.productos) ? v.productos : [];
+          for (const nombre of productos) {
+            const cat = categoriaDeNombre(nombre);
+            const cant = parseInt((nombre.match(/(\d+)\s*x/i) || [])[1] || 1, 10);
+            if (acc[cat] == null) acc.otros += cant;
+            else acc[cat] += cant;
+          }
+        }
+
+        mapa.set(key, acc);
+      }
+
+      const dias = Array.from(mapa.keys()).sort().reverse();
+      resumenPorDiaEl.innerHTML = dias.map(dia => {
+        const r = mapa.get(dia);
+        const total = r.h1 + r.h2 + r.h3 + r.litro + r.cremo_m + r.cremo_g + r.extra + r.otros;
+        return `
+          <details class="dia-item" open>
+            <summary><strong>${dia}</strong> — Total ítems: ${total}</summary>
+            <table class="tabla-resumen">
+              <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+              <tbody>
+                <tr><td>Helados de 1 bola</td><td>${r.h1}</td></tr>
+                <tr><td>Helados de 2 bolas</td><td>${r.h2}</td></tr>
+                <tr><td>Helados de 3 bolas</td><td>${r.h3}</td></tr>
+                <tr><td>Litros</td><td>${r.litro}</td></tr>
+                <tr><td>Cremolada mediana</td><td>${r.cremo_m}</td></tr>
+                <tr><td>Cremolada grande</td><td>${r.cremo_g}</td></tr>
+                <tr><td>Extras (vaso/barquillo)</td><td>${r.extra}</td></tr>
+                <tr><td>Otros</td><td>${r.otros}</td></tr>
+              </tbody>
+            </table>
+          </details>
+        `;
+      }).join('');
+    }
+
+    // Carga inicial
+    filtrar("todo");
+  </script>
+</body>
+</html>

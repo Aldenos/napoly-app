@@ -1,0 +1,16 @@
+{
+  "name": "napoly-app",
+  "version": "1.0.0",
+  "description": "Aplicación de escritorio para Napoly Heladería",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager . NapolyApp --platform=win32 --arch=x64 --icon=napoly.ico --out=dist --overwrite"
+  },
+  "author": "Aldo Zavala",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^26.0.12"
+  }
+}

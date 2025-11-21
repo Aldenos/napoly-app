@@ -1,0 +1,44 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f1e7;
+  margin: 0;
+  padding: 0;
+}
+.login-container, .panel-container, .venta-container, .recibo-container {
+  margin: 80px auto;
+  width: 80%;
+  max-width: 600px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #fff5ec;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+input, textarea, select {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  background-coor: #ffbd8f;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #ffa96b;
+}
+#login-error {
+  color: red;
+}
+h1, h2, h3 {
+  color: #a64f03;
+}
+.logo {
+  width: 120px;
+  margin-bottom: 10px;
+}

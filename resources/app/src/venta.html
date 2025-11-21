@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Venta</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="venta-container">
+    <img src="assets/Logo.png" class="logo" alt="Logo Napoly">
+    <h2>Registrar Venta</h2>
+
+    <div class="comandos">
+      <p><strong>Precios y Comandos:</strong></p>
+      <ul>
+        <li>A - 1 Bola: S/ 3.50</li>
+        <li>D - 2 Bolas: S/ 6.00</li>
+        <li>G - 3 Bolas: S/ 9.00</li>
+        <li>L - Litro: S/ 25.00</li>
+        <li>V - Extra (vaso o barquillo): S/ 0.50</li>
+        <li>X - Cremolada mediana: S/ 4.00</li>
+        <li>N - Cremolada grande: S/ 7.00</li>
+        <li>P - Borrar último producto</li>
+        <li>Ejemplos:</li>
+        <li>• Simple: a, d, g, x, n</li>
+        <li>• Múltiple: 2a, 5v, 10g</li>
+      </ul>
+      <div id="comandoActivo" style="margin-top:10px; font-weight:bold;"></div>
+    </div>
+
+    <div id="resumenVenta"></div>
+
+    <div class="metodo-pago">
+      <label>Método de Pago:</label>
+      <select id="metodoPago">
+        <option value="Efectivo">Efectivo</option>
+        <option value="Yape">Yape</option>
+      </select>
+    </div>
+
+    <button id="btnFinalizar">Finalizar Venta</button>
+    <button id="btnVolver">Volver</button>
+
+    <audio id="audioDing" src="assets/ding-36029.mp3" preload="auto"></audio>
+
+  </div>
+  <script src="js/venta.js"></script>
+</body>
+</html>

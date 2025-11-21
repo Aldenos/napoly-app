@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Napoly</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="panel-container">
+    <img src="assets/Logo.png" class="logo" alt="Logo Napoly">
+    <h2>Panel de Administración</h2>
+    <button id="btnRegistrar">Registrar Venta</button>
+    <button id="btnHistorial" onclick="window.location.href='historial.html'">Ver Historial de Ventas</button>
+    <button id="btnCerrar">Cerrar Sesión</button>
+
+    <div id="estadisticas" style="margin-top:20px;"></div>
+
+    <!-- ===================== RESUMEN-HOY START ===================== -->
+    <hr>
+    <h3 class="subtitulo">Resumen de Hoy</h3>
+    <div id="resumen-hoy" class="card-resumen">
+      <table class="tabla-resumen">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody id="resumen-hoy-body">
+          <!-- Se llena desde panel.js -->
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total ítems</th>
+            <th id="resumen-hoy-total">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <!-- ====================== RESUMEN-HOY END ====================== -->
+  </div>
+
+  <script src="js/panel.js"></script>
+</body>
+</html>

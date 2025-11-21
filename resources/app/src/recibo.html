@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Recibo de Venta</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .recibo-container {
+      width: 300px;
+      margin: 20px auto;
+      background: #fff5ec;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .recibo-container img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    .recibo-container p, .recibo-container li {
+      font-family: monospace;
+      font-size: 14px;
+      margin: 4px 0;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        background: white;
+      }
+      .recibo-container {
+        box-shadow: none;
+        border: none;
+      }
+      button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="recibo-container">
+    <img src="assets/Logo.png" alt="Logo Napoly">
+    <h3>Recibo de Venta</h3>
+    <div id="detalleRecibo"></div>
+    <button onclick="imprimirRecibo()">Imprimir Recibo</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const venta = JSON.parse(localStorage.getItem("ultimaVenta"));
+      const detalle = document.getElementById("detalleRecibo");
+
+      if (!venta) {
+        detalle.innerHTML = "<p>No hay información disponible.</p>";
+        return;
+      }
+
+      const fechaObj = new Date(venta.fecha);
+      const fecha = fechaObj.toLocaleDateString();
+      const hora = fechaObj.toLocaleTimeString();
+      const orden = Math.floor(fechaObj.getTime() / 1000).toString().slice(-6);
+
+      detalle.innerHTML = `
+        <p><strong>ORDEN #${orden}</strong></p>
+        <p>Fecha: ${fecha}</p>
+        <p>Hora: ${hora}</p>
+        <ul>
+          ${venta.productos.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+        <p>Método de Pago: ${venta.metodoPago}</p>
+        <p><strong>Total: S/ ${venta.total}</strong></p>
+      `;
+    });
+
+    function imprimirRecibo() {
+      window.print();
+      window.location.href = 'venta.html';
+    }
+  </script>
+</body>
+</html>.
